@@ -153,9 +153,6 @@ function initializeQuiz() {
         }, 300);
     }
 }
-        }
-    });
-}
 
 // Add some CSS for the quiz
 const style = document.createElement('style');
