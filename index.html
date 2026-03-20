@@ -213,6 +213,11 @@
         <section id="interactive-swot" class="interactive-section">
             <h2>Build Your SWOT Analysis</h2>
             <p>Enter your analysis below. Focus on specific, actionable items for each category.</p>
+            <div class="problem-statement">
+                <h3>Organizational Problem</h3>
+                <p>Describe the specific problem or decision you need to address.</p>
+                <textarea id="problem-textarea" placeholder="e.g., Should we implement a new inventory management system?&#10;How can we improve customer satisfaction?&#10;What strategy should we use to enter a new market?"></textarea>
+            </div>
             <div class="swot-builder">
                 <div class="builder-quadrant strengths">
                     <h3>Strengths</h3>
@@ -238,6 +243,7 @@
             <div class="builder-actions">
                 <button id="generate-insights" class="secondary-button">Generate Insights</button>
                 <button id="export-swot" class="secondary-button">Export Analysis</button>
+                <button id="reset-swot" class="secondary-button">Reset</button>
             </div>
         </section>
     </main>

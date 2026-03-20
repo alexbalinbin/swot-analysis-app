@@ -55,6 +55,18 @@ document.addEventListener('DOMContentLoaded', function() {
     if (exportSwotBtn) {
         exportSwotBtn.addEventListener('click', exportAnalysis);
     }
+
+    // Reset button handler
+    const resetSwotBtn = document.getElementById('reset-swot');
+    if (resetSwotBtn) {
+        resetSwotBtn.addEventListener('click', resetAnalysis);
+    }
+
+    // Load saved data on page load
+    loadSavedData();
+
+    // Auto-save on input change
+    setupAutoSave();
 });
 
 function scrollToInteractiveSWOT() {
@@ -194,18 +206,28 @@ style.textContent = `
 document.head.appendChild(style);
 
 function generateStrategyReport() {
+    const problemTextarea = document.getElementById('problem-textarea');
     const strengthsTextarea = document.querySelector('.builder-quadrant.strengths textarea');
     const weaknessesTextarea = document.querySelector('.builder-quadrant.weaknesses textarea');
     const opportunitiesTextarea = document.querySelector('.builder-quadrant.opportunities textarea');
     const threatsTextarea = document.querySelector('.builder-quadrant.threats textarea');
 
+    const problem = problemTextarea.value.trim();
     const strengths = parseTextarea(strengthsTextarea.value);
     const weaknesses = parseTextarea(weaknessesTextarea.value);
     const opportunities = parseTextarea(opportunitiesTextarea.value);
     const threats = parseTextarea(threatsTextarea.value);
 
-    if (strengths.length === 0 && weaknesses.length === 0 && opportunities.length === 0 && threats.length === 0) {
-        alert('Please enter some SWOT items first.');
+    // Validation
+    if (!problem) {
+        alert('Please describe the organizational problem first.');
+        problemTextarea.focus();
+        return;
+    }
+
+    const totalItems = strengths.length + weaknesses.length + opportunities.length + threats.length;
+    if (totalItems < 3) {
+        alert('Please enter at least 3 SWOT items across all categories for a meaningful analysis.');
         return;
     }
 
@@ -221,22 +243,25 @@ function generateStrategyReport() {
     reportContainer.className = 'report-section';
 
     // Generate report content
-    const reportHTML = generateReportHTML(strengths, weaknesses, opportunities, threats);
+    const reportHTML = generateReportHTML(problem, strengths, weaknesses, opportunities, threats);
 
     reportContainer.innerHTML = reportHTML;
 
     // Insert after the builder actions
     const builderActions = document.querySelector('.builder-actions');
     builderActions.parentNode.insertBefore(reportContainer, builderActions.nextSibling);
+
+    // Scroll to report
+    reportContainer.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 function parseTextarea(text) {
     return text.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('•') || line.length > 1);
 }
 
-function generateReportHTML(strengths, weaknesses, opportunities, threats) {
+function generateReportHTML(problem, strengths, weaknesses, opportunities, threats) {
     // Situation Summary
-    const summary = generateSituationSummary(strengths, weaknesses, opportunities, threats);
+    const summary = generateSituationSummary(problem, strengths, weaknesses, opportunities, threats);
 
     // Key Strategic Insights
     const insights = generateKeyInsights(strengths, weaknesses, opportunities, threats);
@@ -276,15 +301,17 @@ function generateReportHTML(strengths, weaknesses, opportunities, threats) {
     `;
 }
 
-function generateSituationSummary(strengths, weaknesses, opportunities, threats) {
+function generateSituationSummary(problem, strengths, weaknesses, opportunities, threats) {
     const sentences = [];
 
+    sentences.push(`The organization is addressing: ${problem}.`);
+
     if (strengths.length > 0) {
-        sentences.push(`The organization possesses key strengths including ${strengths.slice(0, 2).join(' and ')}${strengths.length > 2 ? ' among others' : ''}.`);
+        sentences.push(`Key strengths include ${strengths.slice(0, 2).join(' and ')}${strengths.length > 2 ? ' among others' : ''}.`);
     }
 
     if (weaknesses.length > 0) {
-        sentences.push(`However, it faces internal challenges such as ${weaknesses.slice(0, 2).join(' and ')}${weaknesses.length > 2 ? ' and other weaknesses' : ''}.`);
+        sentences.push(`However, challenges exist such as ${weaknesses.slice(0, 2).join(' and ')}${weaknesses.length > 2 ? ' and other weaknesses' : ''}.`);
     }
 
     if (opportunities.length > 0) {
@@ -377,6 +404,7 @@ function generateRiskMitigationActions(strengths, weaknesses, opportunities, thr
 }
 
 function exportAnalysis() {
+    const problemTextarea = document.getElementById('problem-textarea');
     const strengthsTextarea = document.querySelector('.builder-quadrant.strengths textarea');
     const weaknessesTextarea = document.querySelector('.builder-quadrant.weaknesses textarea');
     const opportunitiesTextarea = document.querySelector('.builder-quadrant.opportunities textarea');
@@ -384,6 +412,9 @@ function exportAnalysis() {
 
     const content = `
 SWOT Analysis Export
+
+Organizational Problem:
+${problemTextarea.value}
 
 Strengths:
 ${strengthsTextarea.value}
@@ -407,4 +438,79 @@ ${threatsTextarea.value}
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
+}
+
+function resetAnalysis() {
+    if (confirm('Are you sure you want to reset all inputs and remove the generated report? This action cannot be undone.')) {
+        const problemTextarea = document.getElementById('problem-textarea');
+        const textareas = document.querySelectorAll('.builder-quadrant textarea');
+
+        problemTextarea.value = '';
+        textareas.forEach(textarea => textarea.value = '');
+
+        // Remove report if exists
+        const report = document.getElementById('strategy-report');
+        if (report) {
+            report.remove();
+        }
+
+        // Clear localStorage
+        localStorage.removeItem('swot-analysis-data');
+
+        // Scroll back to top of interactive section
+        const interactiveSection = document.getElementById('interactive-swot');
+        interactiveSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }
+}
+
+function loadSavedData() {
+    const savedData = localStorage.getItem('swot-analysis-data');
+    if (savedData) {
+        try {
+            const data = JSON.parse(savedData);
+            const problemTextarea = document.getElementById('problem-textarea');
+            const strengthsTextarea = document.querySelector('.builder-quadrant.strengths textarea');
+            const weaknessesTextarea = document.querySelector('.builder-quadrant.weaknesses textarea');
+            const opportunitiesTextarea = document.querySelector('.builder-quadrant.opportunities textarea');
+            const threatsTextarea = document.querySelector('.builder-quadrant.threats textarea');
+
+            if (data.problem) problemTextarea.value = data.problem;
+            if (data.strengths) strengthsTextarea.value = data.strengths;
+            if (data.weaknesses) weaknessesTextarea.value = data.weaknesses;
+            if (data.opportunities) opportunitiesTextarea.value = data.opportunities;
+            if (data.threats) threatsTextarea.value = data.threats;
+        } catch (e) {
+            console.warn('Failed to load saved SWOT data:', e);
+        }
+    }
+}
+
+function setupAutoSave() {
+    const inputs = [
+        document.getElementById('problem-textarea'),
+        ...document.querySelectorAll('.builder-quadrant textarea')
+    ];
+
+    inputs.forEach(input => {
+        input.addEventListener('input', saveData);
+    });
+}
+
+function saveData() {
+    const problemTextarea = document.getElementById('problem-textarea');
+    const strengthsTextarea = document.querySelector('.builder-quadrant.strengths textarea');
+    const weaknessesTextarea = document.querySelector('.builder-quadrant.weaknesses textarea');
+    const opportunitiesTextarea = document.querySelector('.builder-quadrant.opportunities textarea');
+    const threatsTextarea = document.querySelector('.builder-quadrant.threats textarea');
+
+    const data = {
+        problem: problemTextarea.value,
+        strengths: strengthsTextarea.value,
+        weaknesses: weaknessesTextarea.value,
+        opportunities: opportunitiesTextarea.value,
+        threats: threatsTextarea.value,
+        timestamp: new Date().toISOString()
+    };
+
+    localStorage.setItem('swot-analysis-data', JSON.stringify(data));
 }

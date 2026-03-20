@@ -498,6 +498,47 @@ section:nth-child(odd) {
     margin-right: auto;
 }
 
+.problem-statement {
+    background-color: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.08);
+    margin-bottom: 40px;
+    border-top: 4px solid #7c3aed;
+}
+
+.problem-statement h3 {
+    color: #1f2937;
+    margin-bottom: 8px;
+    font-size: 1.3em;
+    font-weight: 700;
+}
+
+.problem-statement p {
+    color: #6b7280;
+    margin-bottom: 20px;
+    font-size: 0.95em;
+}
+
+.problem-statement textarea {
+    width: 100%;
+    min-height: 80px;
+    padding: 12px;
+    border: 2px solid #e5e7eb;
+    border-radius: 8px;
+    font-family: inherit;
+    font-size: 1em;
+    line-height: 1.5;
+    resize: vertical;
+    transition: border-color 0.3s ease;
+}
+
+.problem-statement textarea:focus {
+    outline: none;
+    border-color: #7c3aed;
+    box-shadow: 0 0 0 3px rgba(124, 58, 237, 0.1);
+}
+
 .swot-builder {
     display: grid;
     grid-template-columns: 1fr 1fr;
