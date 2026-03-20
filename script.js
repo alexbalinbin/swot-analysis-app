@@ -43,6 +43,18 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     });
+
+    // Generate Insights button handler
+    const generateInsightsBtn = document.getElementById('generate-insights');
+    if (generateInsightsBtn) {
+        generateInsightsBtn.addEventListener('click', generateStrategyReport);
+    }
+
+    // Export Analysis button handler
+    const exportSwotBtn = document.getElementById('export-swot');
+    if (exportSwotBtn) {
+        exportSwotBtn.addEventListener('click', exportAnalysis);
+    }
 });
 
 function scrollToInteractiveSWOT() {
@@ -148,5 +160,251 @@ style.textContent = `
     .toggle-btn:hover {
         background-color: #2980b9;
     }
+
+    .report-section {
+        margin: 20px 0;
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 8px;
+        background-color: #f9f9f9;
+    }
+
+    .report-section h3 {
+        color: #2c3e50;
+        margin-top: 0;
+    }
+
+    .insights-list {
+        list-style-type: disc;
+        margin-left: 20px;
+    }
+
+    .actions-list {
+        list-style-type: none;
+        padding: 0;
+    }
+
+    .actions-list li {
+        margin: 10px 0;
+        padding: 10px;
+        background-color: white;
+        border-left: 4px solid #3498db;
+    }
 `;
 document.head.appendChild(style);
+
+function generateStrategyReport() {
+    const strengthsTextarea = document.querySelector('.builder-quadrant.strengths textarea');
+    const weaknessesTextarea = document.querySelector('.builder-quadrant.weaknesses textarea');
+    const opportunitiesTextarea = document.querySelector('.builder-quadrant.opportunities textarea');
+    const threatsTextarea = document.querySelector('.builder-quadrant.threats textarea');
+
+    const strengths = parseTextarea(strengthsTextarea.value);
+    const weaknesses = parseTextarea(weaknessesTextarea.value);
+    const opportunities = parseTextarea(opportunitiesTextarea.value);
+    const threats = parseTextarea(threatsTextarea.value);
+
+    if (strengths.length === 0 && weaknesses.length === 0 && opportunities.length === 0 && threats.length === 0) {
+        alert('Please enter some SWOT items first.');
+        return;
+    }
+
+    // Remove existing report if any
+    const existingReport = document.getElementById('strategy-report');
+    if (existingReport) {
+        existingReport.remove();
+    }
+
+    // Create report container
+    const reportContainer = document.createElement('div');
+    reportContainer.id = 'strategy-report';
+    reportContainer.className = 'report-section';
+
+    // Generate report content
+    const reportHTML = generateReportHTML(strengths, weaknesses, opportunities, threats);
+
+    reportContainer.innerHTML = reportHTML;
+
+    // Insert after the builder actions
+    const builderActions = document.querySelector('.builder-actions');
+    builderActions.parentNode.insertBefore(reportContainer, builderActions.nextSibling);
+}
+
+function parseTextarea(text) {
+    return text.split('\n').map(line => line.trim()).filter(line => line && !line.startsWith('•') || line.length > 1);
+}
+
+function generateReportHTML(strengths, weaknesses, opportunities, threats) {
+    // Situation Summary
+    const summary = generateSituationSummary(strengths, weaknesses, opportunities, threats);
+
+    // Key Strategic Insights
+    const insights = generateKeyInsights(strengths, weaknesses, opportunities, threats);
+
+    // Recommended Action Steps
+    const shortTermActions = generateShortTermActions(strengths, weaknesses, opportunities, threats);
+    const mediumTermActions = generateMediumTermActions(strengths, weaknesses, opportunities, threats);
+    const riskMitigationActions = generateRiskMitigationActions(strengths, weaknesses, opportunities, threats);
+
+    return `
+        <h2>Strategy Report</h2>
+        <div class="report-section">
+            <h3>1. Situation Summary</h3>
+            <p>${summary}</p>
+        </div>
+        <div class="report-section">
+            <h3>2. Key Strategic Insights</h3>
+            <ul class="insights-list">
+                ${insights.map(insight => `<li>${insight}</li>`).join('')}
+            </ul>
+        </div>
+        <div class="report-section">
+            <h3>3. Recommended Action Steps</h3>
+            <h4>Short-Term Actions (0–3 months)</h4>
+            <ul class="actions-list">
+                ${shortTermActions.map(action => `<li>${action}</li>`).join('')}
+            </ul>
+            <h4>Medium-Term Strategy (3–12 months)</h4>
+            <ul class="actions-list">
+                ${mediumTermActions.map(action => `<li>${action}</li>`).join('')}
+            </ul>
+            <h4>Risk Mitigation Actions</h4>
+            <ul class="actions-list">
+                ${riskMitigationActions.map(action => `<li>${action}</li>`).join('')}
+            </ul>
+        </div>
+    `;
+}
+
+function generateSituationSummary(strengths, weaknesses, opportunities, threats) {
+    const sentences = [];
+
+    if (strengths.length > 0) {
+        sentences.push(`The organization possesses key strengths including ${strengths.slice(0, 2).join(' and ')}${strengths.length > 2 ? ' among others' : ''}.`);
+    }
+
+    if (weaknesses.length > 0) {
+        sentences.push(`However, it faces internal challenges such as ${weaknesses.slice(0, 2).join(' and ')}${weaknesses.length > 2 ? ' and other weaknesses' : ''}.`);
+    }
+
+    if (opportunities.length > 0) {
+        sentences.push(`External opportunities present themselves through ${opportunities.slice(0, 2).join(' and ')}${opportunities.length > 2 ? ' plus additional prospects' : ''}.`);
+    }
+
+    if (threats.length > 0) {
+        sentences.push(`Meanwhile, potential threats include ${threats.slice(0, 2).join(' and ')}${threats.length > 2 ? ' alongside other risks' : ''}.`);
+    }
+
+    return sentences.slice(0, 4).join(' ');
+}
+
+function generateKeyInsights(strengths, weaknesses, opportunities, threats) {
+    const insights = [];
+
+    if (strengths.length > 0 && opportunities.length > 0) {
+        insights.push(`Leverage core strengths to capitalize on emerging opportunities.`);
+    }
+
+    if (weaknesses.length > 0) {
+        insights.push(`Address critical weaknesses to prevent them from undermining strategic initiatives.`);
+    }
+
+    if (threats.length > 0 && strengths.length > 0) {
+        insights.push(`Use organizational strengths as a buffer against external threats.`);
+    }
+
+    if (opportunities.length > 0 && weaknesses.length > 0) {
+        insights.push(`Prioritize opportunities that can help overcome identified weaknesses.`);
+    }
+
+    if (threats.length > 0) {
+        insights.push(`Develop contingency plans for the most significant external threats.`);
+    }
+
+    return insights.slice(0, 4); // Limit to 4 insights
+}
+
+function generateShortTermActions(strengths, weaknesses, opportunities, threats) {
+    const actions = [];
+
+    if (weaknesses.length > 0) {
+        actions.push(`Conduct a detailed assessment of the most critical weaknesses to identify quick wins for improvement.`);
+    }
+
+    if (opportunities.length > 0) {
+        actions.push(`Evaluate the top 2-3 opportunities for immediate feasibility and potential impact.`);
+    }
+
+    if (strengths.length > 0) {
+        actions.push(`Document and communicate key strengths to ensure they are leveraged across teams.`);
+    }
+
+    return actions.slice(0, 3);
+}
+
+function generateMediumTermActions(strengths, weaknesses, opportunities, threats) {
+    const actions = [];
+
+    if (strengths.length > 0 && opportunities.length > 0) {
+        actions.push(`Develop specific initiatives that combine organizational strengths with market opportunities.`);
+    }
+
+    if (weaknesses.length > 0) {
+        actions.push(`Create a capability-building plan to address identified skill or resource gaps.`);
+    }
+
+    if (threats.length > 0) {
+        actions.push(`Establish monitoring systems for key external threats and early warning indicators.`);
+    }
+
+    return actions.slice(0, 3);
+}
+
+function generateRiskMitigationActions(strengths, weaknesses, opportunities, threats) {
+    const actions = [];
+
+    if (threats.length > 0) {
+        actions.push(`Develop risk mitigation strategies for each major threat, including backup plans.`);
+    }
+
+    if (weaknesses.length > 0 && threats.length > 0) {
+        actions.push(`Strengthen vulnerable areas that could be exploited by external threats.`);
+    }
+
+    actions.push(`Establish regular SWOT review cycles to adapt to changing conditions.`);
+
+    return actions.slice(0, 3);
+}
+
+function exportAnalysis() {
+    const strengthsTextarea = document.querySelector('.builder-quadrant.strengths textarea');
+    const weaknessesTextarea = document.querySelector('.builder-quadrant.weaknesses textarea');
+    const opportunitiesTextarea = document.querySelector('.builder-quadrant.opportunities textarea');
+    const threatsTextarea = document.querySelector('.builder-quadrant.threats textarea');
+
+    const content = `
+SWOT Analysis Export
+
+Strengths:
+${strengthsTextarea.value}
+
+Weaknesses:
+${weaknessesTextarea.value}
+
+Opportunities:
+${opportunitiesTextarea.value}
+
+Threats:
+${threatsTextarea.value}
+    `;
+
+    const blob = new Blob([content], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'swot-analysis.txt';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
