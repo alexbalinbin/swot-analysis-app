@@ -80,25 +80,19 @@ function scrollToInteractiveSWOT() {
 }
 
 function initializeQuiz() {
-    console.log('Initializing quiz...');
     const questions = document.querySelectorAll('.question');
     const quizResult = document.getElementById('quiz-result');
     let currentQuestionIndex = 0;
 
-    console.log('Found', questions.length, 'questions');
-
     // Show first question
     if (questions.length > 0) {
         questions[0].classList.add('active');
-        console.log('Activated first question');
     }
 
     // Add click handlers to all quiz options
     const quizOptions = document.querySelectorAll('.quiz-option');
-    console.log('Found', quizOptions.length, 'quiz options');
-    quizOptions.forEach((option, index) => {
+    quizOptions.forEach(option => {
         option.addEventListener('click', function() {
-            console.log('Quiz option clicked:', index);
             handleQuizAnswer(this);
         });
 
@@ -106,16 +100,13 @@ function initializeQuiz() {
         option.addEventListener('keydown', function(e) {
             if (e.key === 'Enter' || e.key === ' ') {
                 e.preventDefault();
-                console.log('Quiz option key pressed:', index);
                 handleQuizAnswer(this);
             }
         });
     });
 
     function handleQuizAnswer(option) {
-        console.log('Handling quiz answer for option:', option.textContent.trim());
         const isCorrect = option.dataset.correct === 'true';
-        console.log('Is correct:', isCorrect);
         const currentQuestion = questions[currentQuestionIndex];
         const allOptions = currentQuestion.querySelectorAll('.quiz-option');
 
